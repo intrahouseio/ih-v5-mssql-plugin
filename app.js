@@ -88,11 +88,20 @@ module.exports = async function (plugin) {
 
   plugin.onCommand(async (message) => {
     plugin.log('Get command ' + util.inspect(message), 1);
+    //Убираем ковычки на передаваемой строке
     dynamic_sql = (util.inspect(message['command']).slice(1, -1));
-    await getData();
-    reqResult = JSON.stringify(reqResult['recordset']);
-    const result = { reqResult, myStr: 'OK', type: 'command', unit: message.unit, uuid: message.uuid, sender: message.sender };
-    plugin.sendResponse(result, 1);
+    try {
+      await getData();
+      reqResult = JSON.stringify(reqResult['recordset']);
+      const result = { reqResult, myStr: 'OK', type: 'command', unit: message.unit, uuid: message.uuid, sender: message.sender };
+      plugin.sendResponse(result, 1);
+    } catch (e) {
+      plugin.log(`Request ${dynamic_sql} ERROR ${e}`, 1);
+      const result = { e, myStr: 'ERROR', type: 'command', unit: message.unit, uuid: message.uuid, sender: message.sender };
+      plugin.sendResponse(result, 1);
+    }
+    
+    
   });
 
   async function runReq(sqlReq) {
